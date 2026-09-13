@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "audiobook-tts-benchmark"
+version = "0.1.0"
+description = "CLI for comparing Russian audiobook text-to-speech models"
+readme = "Readme.md"
+requires-python = ">=3.11"
+dependencies = [
+    "elevenlabs>=2.0",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+audiobook-tts = "audiobook_tts.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["audiobook_tts*"]
