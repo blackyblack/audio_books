@@ -7,3 +7,5 @@ dist/
 build/
 output.mp3
 *.part
+samples/
+output/
