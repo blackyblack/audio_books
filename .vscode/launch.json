@@ -19,7 +19,24 @@
       ]
     },
     {
-      "name": "TTS: Gemini short corpus sample",
+      "name": "TTS: Gemini Flash short corpus sample",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "audiobook_tts",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--model",
+        "gemini-2.5-flash-preview-tts",
+        "--input-file",
+        "${workspaceFolder}/corpus/short/07_stress_homographs.abm",
+        "--output",
+        "${workspaceFolder}/outputs/debug/gemini-2.5-flash-preview-tts/stress_homographs.mp3"
+      ]
+    },
+    {
+      "name": "TTS: Gemini Pro short corpus sample",
       "type": "debugpy",
       "request": "launch",
       "module": "audiobook_tts",

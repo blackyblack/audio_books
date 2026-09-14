@@ -23,6 +23,7 @@ directory under `audiobook_tts/providers`.
 Supported models:
 
 - `eleven_v3`
+- `gemini-2.5-flash-preview-tts`
 - `gemini-2.5-pro-preview-tts`
 - `yandex-speechkit-v3`
 

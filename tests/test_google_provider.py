@@ -12,7 +12,16 @@ from audiobook_tts.providers.google import GoogleProvider
 
 
 class GoogleProviderTests(unittest.TestCase):
-    def test_requests_and_writes_inline_mp3(self) -> None:
+    def test_supports_flash_and_pro_models(self) -> None:
+        self.assertEqual(
+            GoogleProvider.SUPPORTED_MODELS,
+            {
+                "gemini-2.5-flash-preview-tts",
+                "gemini-2.5-pro-preview-tts",
+            },
+        )
+
+    def test_requests_and_writes_mp3(self) -> None:
         calls: dict[str, object] = {}
         mp3 = b"ID3audio"
 
@@ -37,7 +46,7 @@ class GoogleProviderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory, "sample.mp3")
             result = provider.synthesize(
-                model="gemini-2.5-pro-preview-tts",
+                model="gemini-2.5-flash-preview-tts",
                 document=parse("Пример."),
                 output=output,
             )
@@ -45,13 +54,12 @@ class GoogleProviderTests(unittest.TestCase):
             self.assertEqual(result, output.resolve())
 
         self.assertEqual(calls["api_key"], "secret")
-        self.assertEqual(calls["model"], "gemini-2.5-pro-preview-tts")
+        self.assertEqual(calls["model"], "gemini-2.5-flash-preview-tts")
         self.assertEqual(
             calls["response_format"],
             {
                 "type": "audio",
                 "mime_type": "audio/mp3",
-                "delivery": "inline",
             },
         )
         self.assertEqual(

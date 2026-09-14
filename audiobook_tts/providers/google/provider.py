@@ -10,7 +10,12 @@ from audiobook_tts.providers.google.markup import compile_document
 
 
 class GoogleProvider:
-    SUPPORTED_MODELS = frozenset({"gemini-2.5-pro-preview-tts"})
+    SUPPORTED_MODELS = frozenset(
+        {
+            "gemini-2.5-flash-preview-tts",
+            "gemini-2.5-pro-preview-tts",
+        }
+    )
     OUTPUT_SUFFIX = ".mp3"
     OUTPUT_MIME_TYPE = "audio/mp3"
 
@@ -56,7 +61,6 @@ class GoogleProvider:
                 response_format={
                     "type": "audio",
                     "mime_type": self.OUTPUT_MIME_TYPE,
-                    "delivery": "inline",
                 },
                 generation_config={"speech_config": [{"voice": self._voice}]},
             )

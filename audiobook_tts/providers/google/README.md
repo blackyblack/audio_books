@@ -1,6 +1,9 @@
 # Google Gemini provider
 
-Supported model: `gemini-2.5-pro-preview-tts`.
+Supported models:
+
+- `gemini-2.5-flash-preview-tts`
+- `gemini-2.5-pro-preview-tts`
 
 ## Credentials
 
@@ -21,14 +24,14 @@ GOOGLE_VOICE=
 Generate one sample:
 
 ```powershell
-audiobook-tts --model gemini-2.5-pro-preview-tts --input-file excerpt.md
+audiobook-tts --model gemini-2.5-flash-preview-tts --input-file excerpt.md
 ```
 
 Generate the entire corpus:
 
 ```powershell
-audiobook-tts-corpus --model gemini-2.5-pro-preview-tts
+audiobook-tts-corpus --model gemini-2.5-flash-preview-tts
 ```
 
 Gemini audio is written as MP3. Corpus output is placed beneath
-`outputs/gemini-2.5-pro-preview-tts`.
+`outputs/gemini-2.5-flash-preview-tts`.
