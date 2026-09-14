@@ -85,7 +85,11 @@ class YandexProvider:
                     continue
                 try:
                     response_part = json.loads(line)
-                    encoded = response_part.get("audioChunk", {}).get("data")
+                    encoded = (
+                        response_part.get("result", {})
+                        .get("audioChunk", {})
+                        .get("data")
+                    )
                     if encoded:
                         audio_file.write(base64.b64decode(encoded, validate=True))
                         wrote_audio = True

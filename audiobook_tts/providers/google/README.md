@@ -30,5 +30,5 @@ Generate the entire corpus:
 audiobook-tts-corpus --model gemini-2.5-pro-preview-tts
 ```
 
-Gemini audio is written as WAV. Corpus output is placed beneath
+Gemini audio is written as MP3. Corpus output is placed beneath
 `outputs/gemini-2.5-pro-preview-tts`.

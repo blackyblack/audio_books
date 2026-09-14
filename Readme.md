@@ -40,8 +40,7 @@ For longer passages, use a UTF-8 text file:
 audiobook-tts --model MODEL_ID --input-file excerpt.md
 ```
 
-The default output is `output.mp3` for ElevenLabs and Yandex, and `output.wav`
-for Gemini. Use `--output` to choose another path with the same file type.
+The default output is `output.mp3`. Use `--output` to choose another MP3 path.
 
 The module form works without the installed command wrapper:
 

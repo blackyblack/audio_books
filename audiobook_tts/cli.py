@@ -35,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         type=Path,
-        help="Output path (default: output.mp3, or output.wav for Gemini).",
+        help="Output MP3 path (default: output.mp3).",
     )
     return parser
 

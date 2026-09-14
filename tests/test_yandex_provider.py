@@ -22,8 +22,10 @@ class YandexProviderTests(unittest.TestCase):
                 for chunk in (b"abc", b"def"):
                     yield json.dumps(
                         {
-                            "audioChunk": {
-                                "data": base64.b64encode(chunk).decode("ascii")
+                            "result": {
+                                "audioChunk": {
+                                    "data": base64.b64encode(chunk).decode("ascii")
+                                }
                             }
                         }
                     ).encode("utf-8")
