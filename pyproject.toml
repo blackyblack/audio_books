@@ -10,7 +10,9 @@ readme = "Readme.md"
 requires-python = ">=3.11"
 dependencies = [
     "elevenlabs>=2.0",
+    "google-genai>=2.23",
     "python-dotenv>=1.0",
+    "requests>=2.32",
 ]
 
 [project.scripts]

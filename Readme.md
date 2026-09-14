@@ -20,19 +20,28 @@ python -m pip install -e .
 Configure the selected provider using `.env`. Provider instructions are in its
 directory under `audiobook_tts/providers`.
 
+Supported models:
+
+- `eleven_v3`
+- `gemini-2.5-pro-preview-tts`
+- `yandex-speechkit-v3`
+
 ## Usage
 
 Generate from text supplied on the command line:
 
 ```powershell
-audiobook-tts --model MODEL_ID --text "Унылая пора! Очей очарованье!" --output sample.mp3
+audiobook-tts --model MODEL_ID --text "Унылая пора! Очей очарованье!"
 ```
 
 For longer passages, use a UTF-8 text file:
 
 ```powershell
-audiobook-tts --model MODEL_ID --input-file excerpt.md --output sample.mp3
+audiobook-tts --model MODEL_ID --input-file excerpt.md
 ```
+
+The default output is `output.mp3` for ElevenLabs and Yandex, and `output.wav`
+for Gemini. Use `--output` to choose another path with the same file type.
 
 The module form works without the installed command wrapper:
 

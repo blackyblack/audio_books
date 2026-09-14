@@ -15,6 +15,8 @@ CORPUS_ROOT = Path(__file__).parents[1] / "corpus"
 
 
 class FakeProvider:
+    OUTPUT_SUFFIX = ".mp3"
+
     def __init__(self) -> None:
         self.calls: list[tuple[str, Document, Path]] = []
 
@@ -60,6 +62,25 @@ class CorpusRunnerTests(unittest.TestCase):
         self.assertEqual((generated, skipped), (15, 0))
         self.assertEqual((generated_again, skipped_again), (0, 15))
         self.assertEqual(len(provider.calls), 15)
+
+    def test_uses_provider_output_suffix(self) -> None:
+        samples = load_corpus(CORPUS_ROOT)[:1]
+        provider = FakeProvider()
+
+        with tempfile.TemporaryDirectory() as directory, contextlib.redirect_stdout(
+            StringIO()
+        ):
+            output_dir = Path(directory)
+            run_corpus(
+                provider=provider,
+                model="test-model",
+                samples=samples,
+                output_dir=output_dir,
+                output_suffix=".wav",
+            )
+
+            expected_output = output_dir / samples[0].relative_path.with_suffix(".wav")
+            self.assertEqual(expected_output.read_bytes(), b"audio")
 
 
 if __name__ == "__main__":
