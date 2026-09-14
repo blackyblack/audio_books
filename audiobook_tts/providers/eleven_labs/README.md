@@ -40,3 +40,7 @@ audiobook-tts-corpus --model eleven_v3
 
 Corpus audio is written beneath `outputs/eleven_v3`. Existing files are skipped
 unless `--overwrite` is provided.
+
+Audiobook Markdown performance cues are passed to Eleven v3 as equivalent
+bracketed directions on a best-effort basis. Their exact effect is
+model-dependent and should be auditioned.

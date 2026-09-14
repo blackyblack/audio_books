@@ -35,3 +35,7 @@ audiobook-tts-corpus --model yandex-speechkit-v3
 
 Yandex audio is written as MP3. Corpus output is placed beneath
 `outputs/yandex-speechkit-v3`.
+
+SpeechKit markup has no portable inline equivalent for Audiobook Markdown
+performance cues. The renderer omits cue directions rather than speaking them;
+the surrounding transcript is preserved.

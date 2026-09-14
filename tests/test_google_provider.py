@@ -13,12 +13,13 @@ from audiobook_tts.providers.google import GoogleProvider
 
 
 class GoogleProviderTests(unittest.TestCase):
-    def test_supports_flash_and_pro_models(self) -> None:
+    def test_supports_gemini_tts_models(self) -> None:
         self.assertEqual(
             GoogleProvider.SUPPORTED_MODELS,
             {
                 "gemini-2.5-flash-preview-tts",
                 "gemini-2.5-pro-preview-tts",
+                "gemini-3.1-flash-tts-preview",
             },
         )
         self.assertEqual(
@@ -27,6 +28,10 @@ class GoogleProviderTests(unittest.TestCase):
         )
         self.assertEqual(
             GoogleProvider.output_suffix_for("gemini-2.5-pro-preview-tts"),
+            ".wav",
+        )
+        self.assertEqual(
+            GoogleProvider.output_suffix_for("gemini-3.1-flash-tts-preview"),
             ".wav",
         )
 
@@ -115,6 +120,36 @@ class GoogleProviderTests(unittest.TestCase):
             calls["response_format"],
             {"type": "audio"},
         )
+
+    def test_accepts_31_flash_model(self) -> None:
+        calls: dict[str, object] = {}
+
+        class FakeInteractions:
+            def create(self, **kwargs: object):
+                calls.update(kwargs)
+                return SimpleNamespace(
+                    output_audio=SimpleNamespace(
+                        data=base64.b64encode(b"\x01\x00").decode("ascii"),
+                        mime_type="audio/l16;rate=24000",
+                    )
+                )
+
+        class FakeClient:
+            def __init__(self, *, api_key: str) -> None:
+                self.interactions = FakeInteractions()
+
+        provider = GoogleProvider(
+            api_key="secret", voice="Kore", client_factory=FakeClient
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            provider.synthesize(
+                model="gemini-3.1-flash-tts-preview",
+                document=parse("{{cue:serious}}Test."),
+                output=Path(directory, "sample.wav"),
+            )
+
+        self.assertEqual(calls["model"], "gemini-3.1-flash-tts-preview")
+        self.assertIn("[serious]Test.", calls["input"])
 
     def test_flash_requires_wav_output(self) -> None:
         provider = GoogleProvider(

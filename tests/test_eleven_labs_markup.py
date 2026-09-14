@@ -23,6 +23,13 @@ class ElevenLabsMarkupTests(unittest.TestCase):
             "Это эм-гэ-у.",
         )
 
+    def test_compiles_portable_narrative_cues(self) -> None:
+        document = parse("{{cue:whispers}}Quiet. {{cue:very-slow}}Wait.")
+
+        self.assertEqual(
+            compile_document(document), "[whispers]Quiet. [very slow]Wait."
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

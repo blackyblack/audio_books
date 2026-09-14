@@ -17,15 +17,14 @@ python -m venv .venv
 python -m pip install -e .
 ```
 
-Configure the selected provider using `.env`. Provider instructions are in its
-directory under `audiobook_tts/providers`.
+Configure the selected provider using `.env`:
 
-Supported models:
+- [ElevenLabs](audiobook_tts/providers/eleven_labs/README.md)
+- [Google](audiobook_tts/providers/google/README.md)
+- [Yandex](audiobook_tts/providers/yandex/README.md)
 
-- `eleven_v3`
-- `gemini-2.5-flash-preview-tts`
-- `gemini-2.5-pro-preview-tts`
-- `yandex-speechkit-v3`
+Each provider guide lists its supported models, credentials, voices, output
+format, and provider-specific behavior.
 
 ## Usage
 
@@ -41,8 +40,8 @@ For longer passages, use a UTF-8 text file:
 audiobook-tts --model MODEL_ID --input-file excerpt.md
 ```
 
-The default output is `output.wav` for Gemini models and `output.mp3` for the
-other providers. Use `--output` to choose another path with the model's format.
+The default filename is `output` with the selected provider's file extension.
+Use `--output` to choose another path with that same extension.
 
 The module form works without the installed command wrapper:
 
@@ -68,6 +67,26 @@ The supported subset is intentionally small:
 - `за́мок` — explicit Russian stress using a Unicode acute accent.
 - `{{pause:short}}` — a `short`, `medium`, or `long` pause.
 - `{{say:МГУ|эм-гэ-у}}` — display/source form followed by the spoken form.
+
+Narrative performance cues use `{{cue:name}}`. For example:
+
+```markdown
+{{cue:whispers}}Подойди ближе. {{cue:sighs}} Я надеялся, что ты поймёшь.
+{{cue:serious}}Теперь слушай. {{cue:very-slow}}Спешить некуда.
+```
+
+The curated cue names are:
+
+- Delivery: `bored`, `curious`, `excited`, `excitedly`, `mischievously`,
+  `reluctantly`, `sarcastic`, `serious`, `tired`, `very-fast`, `very-slow`.
+- Intense delivery: `amazed`, `crying`, `panicked`, `shouting`, `trembling`,
+  `whispers`.
+- Non-verbal performance: `gasp`, `giggles`, `laughs`, `sighs`.
+
+Cues express provider-neutral performance intent. Each renderer translates a
+cue when the selected service has an equivalent and safely omits it otherwise.
+Exact delivery remains model-dependent, so use cues sparingly and audition
+important passages. Ordinary square brackets are text, not ABM markup.
 
 Unknown or malformed directives are rejected before generation.
 

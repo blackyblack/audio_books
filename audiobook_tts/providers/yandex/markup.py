@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from audiobook_tts.markup import (
+    Cue,
     Document,
     Emphasis,
     Heading,
@@ -41,6 +42,10 @@ def _compile_inline(node: Inline) -> str:
         return _PAUSE_TAGS[node.length]
     if isinstance(node, SayAs):
         return _convert_stress(node.spoken)
+    if isinstance(node, Cue):
+        # SpeechKit markup has no portable equivalent for Gemini-style
+        # performance cues. Omit the direction instead of speaking it aloud.
+        return ""
     raise TypeError(f"Unsupported ABM node: {type(node).__name__}")
 
 
