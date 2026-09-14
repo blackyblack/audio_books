@@ -41,8 +41,8 @@ For longer passages, use a UTF-8 text file:
 audiobook-tts --model MODEL_ID --input-file excerpt.md
 ```
 
-The default output is `output.wav` for Gemini Flash and `output.mp3` for the
-other models. Use `--output` to choose another path with the model's format.
+The default output is `output.wav` for Gemini models and `output.mp3` for the
+other providers. Use `--output` to choose another path with the model's format.
 
 The module form works without the installed command wrapper:
 

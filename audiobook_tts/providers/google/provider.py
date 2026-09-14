@@ -15,7 +15,7 @@ class GoogleProvider:
     PRO_MODEL = "gemini-2.5-pro-preview-tts"
     MODEL_OUTPUTS = {
         FLASH_MODEL: (".wav", "audio/l16"),
-        PRO_MODEL: (".mp3", "audio/mp3"),
+        PRO_MODEL: (".wav", "audio/l16"),
     }
     SUPPORTED_MODELS = frozenset(MODEL_OUTPUTS)
     OUTPUT_SAMPLE_RATE = 24_000
@@ -58,12 +58,7 @@ class GoogleProvider:
 
         try:
             client = client_factory(api_key=self._api_key)
-            response_format: dict[str, str | int] = {
-                "type": "audio",
-                "mime_type": output_mime_type,
-            }
-            if output_mime_type == "audio/l16":
-                response_format["sample_rate"] = self.OUTPUT_SAMPLE_RATE
+            response_format: dict[str, str] = {"type": "audio"}
 
             interaction = client.interactions.create(
                 model=model,
@@ -77,11 +72,9 @@ class GoogleProvider:
                 mime_type.partition(";")[0].strip().lower() if mime_type else None
             )
             accepted_mime_types = {output_mime_type}
-            if output_mime_type == "audio/mp3":
-                accepted_mime_types.add("audio/mpeg")
             if response_mime_type and response_mime_type not in accepted_mime_types:
                 raise ProviderError(
-                    f"Google returned '{mime_type}' after {output_mime_type} was requested."
+                    f"Google returned '{mime_type}'; expected the default PCM format."
                 )
             encoded_audio = audio.data
             audio_bytes = base64.b64decode(encoded_audio, validate=True)
