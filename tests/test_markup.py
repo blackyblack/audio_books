@@ -2,37 +2,93 @@ from __future__ import annotations
 
 import unittest
 
-from audiobook_tts.markup import MarkupError, compile_for_elevenlabs
+from audiobook_tts.markup import (
+    Document,
+    Emphasis,
+    Heading,
+    MarkupError,
+    Paragraph,
+    Pause,
+    SayAs,
+    Text,
+    parse,
+)
 
 
 class MarkupTests(unittest.TestCase):
-    def test_compiles_supported_abm(self) -> None:
+    def test_parses_supported_abm_without_provider_details(self) -> None:
         source = (
             "# Глава первая\n\n"
             "Вдали показался **за́мок**. {{pause:medium}}\n"
             "Это {{say:МГУ|эм-гэ-у}}."
         )
 
-        compiled = compile_for_elevenlabs(source)
+        document = parse(source)
 
         self.assertEqual(
-            compiled,
-            "Глава первая\n\n"
-            "Вдали показался ЗА́МОК. [pause]\n"
-            "Это эм-гэ-у.",
+            document,
+            Document(
+                blocks=(
+                    Heading(level=1, content=(Text("Глава первая"),)),
+                    Paragraph(
+                        content=(
+                            Text("Вдали показался "),
+                            Emphasis(content=(Text("за́мок"),)),
+                            Text(". "),
+                            Pause("medium"),
+                            Text("\nЭто "),
+                            SayAs(display="МГУ", spoken="эм-гэ-у"),
+                            Text("."),
+                        )
+                    ),
+                )
+            ),
         )
 
     def test_rejects_unknown_directive(self) -> None:
         with self.assertRaisesRegex(MarkupError, "Unknown or malformed"):
-            compile_for_elevenlabs("Текст {{emotion:sad}}")
+            parse("Текст {{emotion:sad}}")
+
+    def test_heading_does_not_require_a_blank_line_before_body(self) -> None:
+        document = parse("# Глава\nТекст")
+
+        self.assertEqual(
+            document,
+            Document(
+                blocks=(
+                    Heading(level=1, content=(Text("Глава"),)),
+                    Paragraph(content=(Text("Текст"),)),
+                )
+            ),
+        )
+
+    def test_rejects_unknown_directive_inside_emphasis(self) -> None:
+        with self.assertRaisesRegex(MarkupError, "Unknown or malformed"):
+            parse("**текст {{emotion:sad}}**")
+
+    def test_parses_supported_directive_inside_emphasis(self) -> None:
+        document = parse("**текст {{pause:short}}**")
+
+        self.assertEqual(
+            document,
+            Document(
+                blocks=(
+                    Paragraph(
+                        content=(
+                            Emphasis(content=(Text("текст "), Pause("short"))),
+                        )
+                    ),
+                )
+            ),
+        )
 
     def test_rejects_unclosed_emphasis(self) -> None:
-        with self.assertRaisesRegex(MarkupError, "Unclosed emphasis"):
-            compile_for_elevenlabs("Это **важно.")
+        with self.assertRaisesRegex(MarkupError, "malformed emphasis"):
+            parse("Это **важно.")
 
     def test_rejects_empty_input(self) -> None:
         with self.assertRaisesRegex(MarkupError, "must not be empty"):
-            compile_for_elevenlabs("  \n")
+            parse("  \n")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "language": "ru-RU",
+  "markup": "abm-v0",
+  "short": [
+    {
+      "id": "short-neutral-narration",
+      "file": "short/01_neutral_narration.abm",
+      "title": "Нейтральное повествование",
+      "focus": ["naturalness", "pace", "paragraphs"]
+    },
+    {
+      "id": "short-dialogue",
+      "file": "short/02_dialogue.abm",
+      "title": "Диалог",
+      "focus": ["dialogue", "speaker-transitions", "intonation"]
+    },
+    {
+      "id": "short-emotional-transition",
+      "file": "short/03_emotional_transition.abm",
+      "title": "Эмоциональный переход",
+      "focus": ["emotion", "dynamic-range", "restraint"]
+    },
+    {
+      "id": "short-complex-syntax",
+      "file": "short/04_complex_syntax.abm",
+      "title": "Сложный синтаксис",
+      "focus": ["long-sentences", "breath", "phrasing"]
+    },
+    {
+      "id": "short-numbers-dates",
+      "file": "short/05_numbers_dates.abm",
+      "title": "Числа и даты",
+      "focus": ["numbers", "dates", "currency", "roman-numerals"]
+    },
+    {
+      "id": "short-names-toponyms",
+      "file": "short/06_names_toponyms.abm",
+      "title": "Имена и топонимы",
+      "focus": ["names", "patronymics", "foreign-words", "toponyms"]
+    },
+    {
+      "id": "short-stress-homographs",
+      "file": "short/07_stress_homographs.abm",
+      "title": "Ударения и омографы",
+      "focus": ["stress", "homographs", "pronunciation"]
+    },
+    {
+      "id": "short-rhythmic-prose",
+      "file": "short/08_rhythmic_prose.abm",
+      "title": "Ритмическая проза",
+      "focus": ["rhythm", "line-breaks", "imagery"]
+    },
+    {
+      "id": "short-punctuation",
+      "file": "short/09_punctuation.abm",
+      "title": "Пунктуация и прямая речь",
+      "focus": ["punctuation", "quotes", "parentheses", "interruptions"]
+    },
+    {
+      "id": "short-abbreviations",
+      "file": "short/10_abbreviations.abm",
+      "title": "Сокращения и термины",
+      "focus": ["abbreviations", "say-as", "mixed-script"]
+    }
+  ],
+  "long": [
+    {
+      "id": "long-literary-narration",
+      "file": "long/01_literary_narration.abm",
+      "title": "Станция у северного озера",
+      "focus": ["long-form", "literary", "consistency", "atmosphere"]
+    },
+    {
+      "id": "long-dialogue",
+      "file": "long/02_dialogue_scene.abm",
+      "title": "Разговор в архиве",
+      "focus": ["long-form", "dialogue", "character-separation", "emotion"]
+    },
+    {
+      "id": "long-nonfiction",
+      "file": "long/03_nonfiction.abm",
+      "title": "Как город слышит зиму",
+      "focus": ["long-form", "nonfiction", "terms", "explanation"]
+    }
+  ],
+  "continuity": {
+    "id": "continuity-night-crossing",
+    "title": "Ночная переправа",
+    "parts": [
+      "continuity/night_crossing_part_1.abm",
+      "continuity/night_crossing_part_2.abm"
+    ],
+    "focus": ["chunk-boundary", "voice-consistency", "pace", "room-tone"]
+  }
+}

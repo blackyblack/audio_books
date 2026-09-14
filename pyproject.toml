@@ -15,6 +15,7 @@ dependencies = [
 
 [project.scripts]
 audiobook-tts = "audiobook_tts.cli:main"
+audiobook-tts-corpus = "audiobook_tts.corpus_cli:main"
 
 [tool.setuptools.packages.find]
 include = ["audiobook_tts*"]

@@ -4,9 +4,9 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Callable
 
-
-class ProviderError(RuntimeError):
-    """Raised when a speech provider cannot generate or save audio."""
+from audiobook_tts.markup import Document
+from audiobook_tts.providers.base import ProviderError
+from audiobook_tts.providers.eleven_labs.markup import compile_document
 
 
 class ElevenLabsProvider:
@@ -25,10 +25,11 @@ class ElevenLabsProvider:
         self._voice_id = voice_id
         self._client_factory = client_factory
 
-    def synthesize(self, *, model: str, text: str, output: Path) -> Path:
+    def synthesize(self, *, model: str, document: Document, output: Path) -> Path:
         if model not in self.SUPPORTED_MODELS:
             supported = ", ".join(sorted(self.SUPPORTED_MODELS))
             raise ProviderError(f"Unsupported model '{model}'. Supported: {supported}.")
+        text = compile_document(document)
         if len(text) > self.MAX_CHARACTERS:
             raise ProviderError(
                 f"Compiled input is {len(text):,} characters; {model} accepts at most "

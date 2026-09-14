@@ -6,6 +6,7 @@ __pycache__/
 dist/
 build/
 output.mp3
+outputs/
 *.part
 samples/
 output/
