@@ -35,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         type=Path,
-        help="Output MP3 path (default: output.mp3).",
+        help="Output path (default: output with the provider's file extension).",
     )
     return parser
 
@@ -54,7 +54,7 @@ def run(args: argparse.Namespace) -> Path:
     source = read_input(text=args.text, input_file=args.input_file)
     document = parse(source)
     provider = create_provider(model=args.model, voice_id_override=args.voice_id)
-    output = args.output or Path(f"output{provider.OUTPUT_SUFFIX}")
+    output = args.output or Path(f"output{provider.output_suffix_for(args.model)}")
     return provider.synthesize(model=args.model, document=document, output=output)
 
 

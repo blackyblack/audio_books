@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import wave
 from pathlib import Path
 from typing import Any, Callable
 
@@ -10,14 +11,16 @@ from audiobook_tts.providers.google.markup import compile_document
 
 
 class GoogleProvider:
-    SUPPORTED_MODELS = frozenset(
-        {
-            "gemini-2.5-flash-preview-tts",
-            "gemini-2.5-pro-preview-tts",
-        }
-    )
-    OUTPUT_SUFFIX = ".mp3"
-    OUTPUT_MIME_TYPE = "audio/mp3"
+    FLASH_MODEL = "gemini-2.5-flash-preview-tts"
+    PRO_MODEL = "gemini-2.5-pro-preview-tts"
+    MODEL_OUTPUTS = {
+        FLASH_MODEL: (".wav", "audio/l16"),
+        PRO_MODEL: (".mp3", "audio/mp3"),
+    }
+    SUPPORTED_MODELS = frozenset(MODEL_OUTPUTS)
+    OUTPUT_SAMPLE_RATE = 24_000
+    OUTPUT_CHANNELS = 1
+    OUTPUT_SAMPLE_WIDTH = 2
 
     def __init__(
         self,
@@ -31,11 +34,11 @@ class GoogleProvider:
         self._client_factory = client_factory
 
     def synthesize(self, *, model: str, document: Document, output: Path) -> Path:
-        if model not in self.SUPPORTED_MODELS:
-            supported = ", ".join(sorted(self.SUPPORTED_MODELS))
-            raise ProviderError(f"Unsupported model '{model}'. Supported: {supported}.")
-        if output.suffix.lower() != self.OUTPUT_SUFFIX:
-            raise ProviderError("Google Gemini TTS output must use the .mp3 extension.")
+        output_suffix, output_mime_type = self._output_format(model)
+        if output.suffix.lower() != output_suffix:
+            raise ProviderError(
+                f"{model} output must use the {output_suffix} extension."
+            )
 
         client_factory = self._client_factory
         if client_factory is None:
@@ -55,24 +58,37 @@ class GoogleProvider:
 
         try:
             client = client_factory(api_key=self._api_key)
+            response_format: dict[str, str | int] = {
+                "type": "audio",
+                "mime_type": output_mime_type,
+            }
+            if output_mime_type == "audio/l16":
+                response_format["sample_rate"] = self.OUTPUT_SAMPLE_RATE
+
             interaction = client.interactions.create(
                 model=model,
                 input=prompt,
-                response_format={
-                    "type": "audio",
-                    "mime_type": self.OUTPUT_MIME_TYPE,
-                },
+                response_format=response_format,
                 generation_config={"speech_config": [{"voice": self._voice}]},
             )
             audio = interaction.output_audio
             mime_type = getattr(audio, "mime_type", None)
-            if mime_type and mime_type not in {self.OUTPUT_MIME_TYPE, "audio/mpeg"}:
+            response_mime_type = (
+                mime_type.partition(";")[0].strip().lower() if mime_type else None
+            )
+            accepted_mime_types = {output_mime_type}
+            if output_mime_type == "audio/mp3":
+                accepted_mime_types.add("audio/mpeg")
+            if response_mime_type and response_mime_type not in accepted_mime_types:
                 raise ProviderError(
-                    f"Google returned '{mime_type}' after MP3 was requested."
+                    f"Google returned '{mime_type}' after {output_mime_type} was requested."
                 )
             encoded_audio = audio.data
             audio_bytes = base64.b64decode(encoded_audio, validate=True)
-            self._write_audio(partial, audio_bytes)
+            if output_mime_type == "audio/l16":
+                self._write_wav(partial, audio_bytes)
+            else:
+                self._write_audio(partial, audio_bytes)
             partial.replace(output)
         except Exception as exc:
             partial.unlink(missing_ok=True)
@@ -82,8 +98,32 @@ class GoogleProvider:
 
         return output.resolve()
 
+    @classmethod
+    def output_suffix_for(cls, model: str) -> str:
+        return cls._output_format(model)[0]
+
+    @classmethod
+    def _output_format(cls, model: str) -> tuple[str, str]:
+        try:
+            return cls.MODEL_OUTPUTS[model]
+        except KeyError as exc:
+            supported = ", ".join(sorted(cls.SUPPORTED_MODELS))
+            raise ProviderError(
+                f"Unsupported model '{model}'. Supported: {supported}."
+            ) from exc
+
     @staticmethod
     def _write_audio(path: Path, audio: bytes) -> None:
         if not audio:
             raise ProviderError("Google returned an empty audio response.")
         path.write_bytes(audio)
+
+    @classmethod
+    def _write_wav(cls, path: Path, audio: bytes) -> None:
+        if not audio:
+            raise ProviderError("Google returned an empty audio response.")
+        with wave.open(str(path), "wb") as wav_file:
+            wav_file.setnchannels(cls.OUTPUT_CHANNELS)
+            wav_file.setsampwidth(cls.OUTPUT_SAMPLE_WIDTH)
+            wav_file.setframerate(cls.OUTPUT_SAMPLE_RATE)
+            wav_file.writeframes(audio)

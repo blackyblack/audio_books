@@ -27,6 +27,10 @@ class YandexProvider:
         self._voice = voice
         self._session_factory = session_factory
 
+    @classmethod
+    def output_suffix_for(cls, model: str) -> str:
+        return cls.OUTPUT_SUFFIX
+
     def synthesize(self, *, model: str, document: Document, output: Path) -> Path:
         if model not in self.SUPPORTED_MODELS:
             supported = ", ".join(sorted(self.SUPPORTED_MODELS))

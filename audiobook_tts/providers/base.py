@@ -9,6 +9,6 @@ class ProviderError(RuntimeError):
 
 
 class SpeechProvider(Protocol):
-    OUTPUT_SUFFIX: str
+    def output_suffix_for(self, model: str) -> str: ...
 
     def synthesize(self, *, model: str, document: Document, output: Path) -> Path: ...

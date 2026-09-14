@@ -13,7 +13,7 @@ from audiobook_tts.providers.factory import SUPPORTED_MODELS, create_provider
 
 
 class CorpusProvider(Protocol):
-    OUTPUT_SUFFIX: str
+    def output_suffix_for(self, model: str) -> str: ...
 
     def synthesize(self, *, model: str, document: Document, output: Path) -> Path: ...
 
@@ -97,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
             samples=samples,
             output_dir=output_dir,
             overwrite=args.overwrite,
-            output_suffix=provider.OUTPUT_SUFFIX,
+            output_suffix=provider.output_suffix_for(args.model),
         )
     except (ConfigurationError, CorpusError, ProviderError) as exc:
         parser.exit(2, f"error: {exc}\n")
