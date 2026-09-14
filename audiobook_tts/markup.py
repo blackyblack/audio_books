@@ -16,7 +16,7 @@ class Text:
 
 @dataclass(frozen=True)
 class Emphasis:
-    value: str
+    content: tuple[Inline, ...]
 
 
 @dataclass(frozen=True)
@@ -67,12 +67,22 @@ def parse(source: str) -> Document:
         raise MarkupError("Input text must not be empty.")
 
     normalized = source.replace("\r\n", "\n").replace("\r", "\n").strip()
-    raw_blocks = re.split(r"\n[ \t]*\n+", normalized)
     blocks: list[Block] = []
+    paragraph_lines: list[str] = []
 
-    for raw_block in raw_blocks:
-        heading = _HEADING_RE.fullmatch(raw_block)
+    def flush_paragraph() -> None:
+        if paragraph_lines:
+            blocks.append(Paragraph(content=_parse_inline("\n".join(paragraph_lines))))
+            paragraph_lines.clear()
+
+    for line in normalized.split("\n"):
+        if not line.strip():
+            flush_paragraph()
+            continue
+
+        heading = _HEADING_RE.fullmatch(line)
         if heading:
+            flush_paragraph()
             blocks.append(
                 Heading(
                     level=len(heading.group(1)),
@@ -80,7 +90,9 @@ def parse(source: str) -> Document:
                 )
             )
         else:
-            blocks.append(Paragraph(content=_parse_inline(raw_block)))
+            paragraph_lines.append(line)
+
+    flush_paragraph()
 
     return Document(blocks=tuple(blocks))
 
@@ -98,7 +110,7 @@ def _parse_inline(value: str) -> tuple[Inline, ...]:
             emphasized = match.group(1).strip()
             if not emphasized:
                 raise MarkupError("Emphasis must not be empty.")
-            nodes.append(Emphasis(emphasized))
+            nodes.append(Emphasis(content=_parse_inline(emphasized)))
         elif match.group(2) is not None:
             nodes.append(Pause(match.group(2)))
         else:

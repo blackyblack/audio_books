@@ -77,6 +77,32 @@ class ProviderTests(unittest.TestCase):
             },
         )
 
+    def test_compiles_pause_inside_emphasis_without_altering_cue(self) -> None:
+        calls: dict[str, object] = {}
+
+        class FakeTextToSpeech:
+            def convert(self, **kwargs: object):
+                calls.update(kwargs)
+                return iter([b"audio-data"])
+
+        class FakeClient:
+            def __init__(self, *, api_key: str) -> None:
+                self.text_to_speech = FakeTextToSpeech()
+
+        provider = ElevenLabsProvider(
+            api_key="secret",
+            voice_id="russian-voice",
+            client_factory=FakeClient,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            provider.synthesize(
+                model="eleven_v3",
+                document=parse("**текст {{pause:short}}**"),
+                output=Path(directory, "sample.mp3"),
+            )
+
+        self.assertEqual(calls["text"], "ТЕКСТ [short pause]")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -33,7 +33,7 @@ class MarkupTests(unittest.TestCase):
                     Paragraph(
                         content=(
                             Text("Вдали показался "),
-                            Emphasis("за́мок"),
+                            Emphasis(content=(Text("за́мок"),)),
                             Text(". "),
                             Pause("medium"),
                             Text("\nЭто "),
@@ -48,6 +48,39 @@ class MarkupTests(unittest.TestCase):
     def test_rejects_unknown_directive(self) -> None:
         with self.assertRaisesRegex(MarkupError, "Unknown or malformed"):
             parse("Текст {{emotion:sad}}")
+
+    def test_heading_does_not_require_a_blank_line_before_body(self) -> None:
+        document = parse("# Глава\nТекст")
+
+        self.assertEqual(
+            document,
+            Document(
+                blocks=(
+                    Heading(level=1, content=(Text("Глава"),)),
+                    Paragraph(content=(Text("Текст"),)),
+                )
+            ),
+        )
+
+    def test_rejects_unknown_directive_inside_emphasis(self) -> None:
+        with self.assertRaisesRegex(MarkupError, "Unknown or malformed"):
+            parse("**текст {{emotion:sad}}**")
+
+    def test_parses_supported_directive_inside_emphasis(self) -> None:
+        document = parse("**текст {{pause:short}}**")
+
+        self.assertEqual(
+            document,
+            Document(
+                blocks=(
+                    Paragraph(
+                        content=(
+                            Emphasis(content=(Text("текст "), Pause("short"))),
+                        )
+                    ),
+                )
+            ),
+        )
 
     def test_rejects_unclosed_emphasis(self) -> None:
         with self.assertRaisesRegex(MarkupError, "malformed emphasis"):

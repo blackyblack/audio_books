@@ -34,9 +34,21 @@ def _compile_inline(node: Inline) -> str:
         return node.value
     if isinstance(node, Emphasis):
         # Eleven v3 uses capitalization as its documented emphasis mechanism.
-        return node.value.upper()
+        return "".join(_compile_emphasized(child) for child in node.content)
     if isinstance(node, Pause):
         return _PAUSE_TAGS[node.length]
     if isinstance(node, SayAs):
         return node.spoken
+    raise TypeError(f"Unsupported ABM node: {type(node).__name__}")
+
+
+def _compile_emphasized(node: Inline) -> str:
+    if isinstance(node, Text):
+        return node.value.upper()
+    if isinstance(node, Emphasis):
+        return "".join(_compile_emphasized(child) for child in node.content)
+    if isinstance(node, Pause):
+        return _PAUSE_TAGS[node.length]
+    if isinstance(node, SayAs):
+        return node.spoken.upper()
     raise TypeError(f"Unsupported ABM node: {type(node).__name__}")
