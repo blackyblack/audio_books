@@ -25,6 +25,7 @@ Supported models:
 - `eleven_v3`
 - `gemini-2.5-flash-preview-tts`
 - `gemini-2.5-pro-preview-tts`
+- `gemini-3.1-flash-tts-preview`
 - `yandex-speechkit-v3`
 
 ## Usage
@@ -68,6 +69,28 @@ The supported subset is intentionally small:
 - `за́мок` — explicit Russian stress using a Unicode acute accent.
 - `{{pause:short}}` — a `short`, `medium`, or `long` pause.
 - `{{say:МГУ|эм-гэ-у}}` — display/source form followed by the spoken form.
+
+Narrative performance cues use `{{cue:name}}`. For example:
+
+```markdown
+{{cue:whispers}}Подойди ближе. {{cue:sighs}} Я надеялся, что ты поймёшь.
+{{cue:serious}}Теперь слушай. {{cue:very-slow}}Спешить некуда.
+```
+
+The curated cue names are:
+
+- Delivery: `bored`, `curious`, `excited`, `excitedly`, `mischievously`,
+  `reluctantly`, `sarcastic`, `serious`, `tired`, `very-fast`, `very-slow`.
+- Intense delivery: `amazed`, `crying`, `panicked`, `shouting`, `trembling`,
+  `whispers`.
+- Non-verbal performance: `gasp`, `giggles`, `laughs`, `sighs`.
+
+These map to the documented Gemini audio tags and are intended primarily for
+Gemini 2.5 Pro TTS and Gemini 3.1 Flash TTS. Eleven v3 receives equivalent
+bracketed cues on a best-effort basis. Yandex SpeechKit has no portable inline
+equivalent, so its renderer omits cues rather than speaking them. Cues influence
+the passage that follows them; synthesis remains probabilistic, so use them
+sparingly and audition important passages.
 
 Unknown or malformed directives are rejected before generation.
 

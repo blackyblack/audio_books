@@ -30,7 +30,12 @@ class SayAs:
     spoken: str
 
 
-Inline: TypeAlias = Text | Emphasis | Pause | SayAs
+@dataclass(frozen=True)
+class Cue:
+    name: str
+
+
+Inline: TypeAlias = Text | Emphasis | Pause | SayAs | Cue
 
 
 @dataclass(frozen=True)
@@ -53,10 +58,40 @@ class Document:
 
 
 _HEADING_RE = re.compile(r"^\s{0,3}(#{1,6})\s+(.+?)\s*$")
+# A conservative, audiobook-oriented subset of Gemini's documented audio tags.
+# Kebab-case is used where Gemini's tag contains spaces so ABM directives remain
+# easy to parse and portable to other providers.
+SUPPORTED_CUES = frozenset(
+    {
+        "amazed",
+        "bored",
+        "crying",
+        "curious",
+        "excited",
+        "excitedly",
+        "gasp",
+        "giggles",
+        "laughs",
+        "mischievously",
+        "panicked",
+        "reluctantly",
+        "sarcastic",
+        "serious",
+        "shouting",
+        "sighs",
+        "tired",
+        "trembling",
+        "very-fast",
+        "very-slow",
+        "whispers",
+    }
+)
+
 _INLINE_TOKEN_RE = re.compile(
-    r"\*\*(.+?)\*\*"
-    r"|\{\{pause:(short|medium|long)\}\}"
-    r"|\{\{say:([^{}|]+)\|([^{}]+)\}\}"
+    r"\*\*(?P<emphasis>.+?)\*\*"
+    r"|\{\{pause:(?P<pause>short|medium|long)\}\}"
+    r"|\{\{say:(?P<say_display>[^{}|]+)\|(?P<say_spoken>[^{}]+)\}\}"
+    r"|\{\{cue:(?P<cue>[a-z]+(?:-[a-z]+)*)\}\}"
 )
 
 
@@ -106,19 +141,27 @@ def _parse_inline(value: str) -> tuple[Inline, ...]:
         if plain:
             nodes.append(Text(plain))
 
-        if match.group(1) is not None:
-            emphasized = match.group(1).strip()
+        if match.group("emphasis") is not None:
+            emphasized = match.group("emphasis").strip()
             if not emphasized:
                 raise MarkupError("Emphasis must not be empty.")
             nodes.append(Emphasis(content=_parse_inline(emphasized)))
-        elif match.group(2) is not None:
-            nodes.append(Pause(match.group(2)))
-        else:
-            display = match.group(3).strip()
-            spoken = match.group(4).strip()
+        elif match.group("pause") is not None:
+            nodes.append(Pause(match.group("pause")))
+        elif match.group("say_display") is not None:
+            display = match.group("say_display").strip()
+            spoken = match.group("say_spoken").strip()
             if not display or not spoken:
                 raise MarkupError("Both forms in a say directive must not be empty.")
             nodes.append(SayAs(display=display, spoken=spoken))
+        else:
+            cue = match.group("cue")
+            if cue not in SUPPORTED_CUES:
+                supported = ", ".join(sorted(SUPPORTED_CUES))
+                raise MarkupError(
+                    f"Unsupported ABM cue '{cue}'. Supported cues: {supported}."
+                )
+            nodes.append(Cue(name=cue))
 
         position = match.end()
 
@@ -137,7 +180,8 @@ def _reject_unparsed_markup(value: str, nodes: list[Inline]) -> None:
     if "{{" in text_outside_tokens or "}}" in text_outside_tokens:
         raise MarkupError(
             "Unknown or malformed ABM directive. Supported directives are "
-            "{{pause:short|medium|long}} and {{say:display|spoken}}."
+            "{{pause:short|medium|long}}, {{say:display|spoken}}, and "
+            "{{cue:name}}."
         )
     if "**" in text_outside_tokens or value.count("**") % 2:
         raise MarkupError("Unclosed or malformed emphasis marker '**'.")

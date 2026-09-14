@@ -22,6 +22,11 @@ class YandexMarkupTests(unittest.TestCase):
             "Вдали показался **з+амок**. sil<[400]> Это эм-гэ-у.",
         )
 
+    def test_omits_unsupported_narrative_cues(self) -> None:
+        document = parse("{{cue:whispers}}Quietly.")
+
+        self.assertEqual(compile_document(document), "Quietly.")
+
 
 if __name__ == "__main__":
     unittest.main()

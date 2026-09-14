@@ -13,9 +13,11 @@ from audiobook_tts.providers.google.markup import compile_document
 class GoogleProvider:
     FLASH_MODEL = "gemini-2.5-flash-preview-tts"
     PRO_MODEL = "gemini-2.5-pro-preview-tts"
+    FLASH_31_MODEL = "gemini-3.1-flash-tts-preview"
     MODEL_OUTPUTS = {
         FLASH_MODEL: (".wav", "audio/l16"),
         PRO_MODEL: (".wav", "audio/l16"),
+        FLASH_31_MODEL: (".wav", "audio/l16"),
     }
     SUPPORTED_MODELS = frozenset(MODEL_OUTPUTS)
     OUTPUT_SAMPLE_RATE = 24_000

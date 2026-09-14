@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from audiobook_tts.markup import (
+    Cue,
     Document,
     Emphasis,
     Heading,
@@ -8,6 +9,7 @@ from audiobook_tts.markup import (
     Paragraph,
     Pause,
     SayAs,
+    SUPPORTED_CUES,
     Text,
 )
 
@@ -15,6 +17,11 @@ _PAUSE_TAGS = {
     "short": "[short pause]",
     "medium": "[pause]",
     "long": "[long pause]",
+}
+
+_CUE_TAGS = {name: f"[{name}]" for name in SUPPORTED_CUES} | {
+    "very-fast": "[very fast]",
+    "very-slow": "[very slow]",
 }
 
 
@@ -39,6 +46,8 @@ def _compile_inline(node: Inline) -> str:
         return _PAUSE_TAGS[node.length]
     if isinstance(node, SayAs):
         return node.spoken
+    if isinstance(node, Cue):
+        return _CUE_TAGS[node.name]
     raise TypeError(f"Unsupported ABM node: {type(node).__name__}")
 
 
@@ -51,4 +60,6 @@ def _compile_emphasized(node: Inline) -> str:
         return _PAUSE_TAGS[node.length]
     if isinstance(node, SayAs):
         return node.spoken.upper()
+    if isinstance(node, Cue):
+        return _CUE_TAGS[node.name]
     raise TypeError(f"Unsupported ABM node: {type(node).__name__}")
