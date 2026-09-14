@@ -17,16 +17,14 @@ python -m venv .venv
 python -m pip install -e .
 ```
 
-Configure the selected provider using `.env`. Provider instructions are in its
-directory under `audiobook_tts/providers`.
+Configure the selected provider using `.env`:
 
-Supported models:
+- [ElevenLabs](audiobook_tts/providers/eleven_labs/README.md)
+- [Google](audiobook_tts/providers/google/README.md)
+- [Yandex](audiobook_tts/providers/yandex/README.md)
 
-- `eleven_v3`
-- `gemini-2.5-flash-preview-tts`
-- `gemini-2.5-pro-preview-tts`
-- `gemini-3.1-flash-tts-preview`
-- `yandex-speechkit-v3`
+Each provider guide lists its supported models, credentials, voices, output
+format, and provider-specific behavior.
 
 ## Usage
 
@@ -42,8 +40,8 @@ For longer passages, use a UTF-8 text file:
 audiobook-tts --model MODEL_ID --input-file excerpt.md
 ```
 
-The default output is `output.wav` for Gemini models and `output.mp3` for the
-other providers. Use `--output` to choose another path with the model's format.
+The default filename is `output` with the selected provider's file extension.
+Use `--output` to choose another path with that same extension.
 
 The module form works without the installed command wrapper:
 
@@ -85,12 +83,10 @@ The curated cue names are:
   `whispers`.
 - Non-verbal performance: `gasp`, `giggles`, `laughs`, `sighs`.
 
-These map to the documented Gemini audio tags and are intended primarily for
-Gemini 2.5 Pro TTS and Gemini 3.1 Flash TTS. Eleven v3 receives equivalent
-bracketed cues on a best-effort basis. Yandex SpeechKit has no portable inline
-equivalent, so its renderer omits cues rather than speaking them. Cues influence
-the passage that follows them; synthesis remains probabilistic, so use them
-sparingly and audition important passages.
+Cues express provider-neutral performance intent. Each renderer translates a
+cue when the selected service has an equivalent and safely omits it otherwise.
+Exact delivery remains model-dependent, so use cues sparingly and audition
+important passages. Ordinary square brackets are text, not ABM markup.
 
 Unknown or malformed directives are rejected before generation.
 

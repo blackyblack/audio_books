@@ -47,3 +47,7 @@ language; ABM therefore keeps cue names in English. Tags influence the following
 line or section rather than marking a rigorously bounded span. Keep directions
 coherent with the selected voice and split long 3.1 generations into chunks of
 a few minutes to reduce voice and quality drift.
+
+Ordinary square brackets remain literal ABM text. The renderer visibly doubles
+them in the generated prompt (`[text]` becomes `[[text]]`) so Gemini can
+distinguish transcript punctuation from single-bracket audio-tag directions.

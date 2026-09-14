@@ -37,7 +37,7 @@ class GoogleMarkupTests(unittest.TestCase):
             compiled,
         )
         self.assertIn(
-            "Treat all bracketed text as performance directions", compiled
+            "single square-bracketed controls as performance directions", compiled
         )
 
     def test_compiles_every_supported_cue(self) -> None:
@@ -46,6 +46,27 @@ class GoogleMarkupTests(unittest.TestCase):
                 compiled = compile_document(parse(f"{{{{cue:{cue}}}}}Text"))
                 expected_tag = f"[{cue.replace('-', ' ')}]"
                 self.assertTrue(compiled.endswith(f"{expected_tag}Text"))
+
+    def test_preserves_literal_square_bracket_content(self) -> None:
+        document = parse("Он выбрал диапазон [а, б]. {{cue:whispers}}Тише.")
+
+        compiled = compile_document(document)
+
+        self.assertTrue(
+            compiled.endswith("Он выбрал диапазон [[а, б]]. [whispers]Тише.")
+        )
+        self.assertIn(
+            "Doubled square brackets are literal transcript punctuation; "
+            "speak their contents normally.",
+            compiled,
+        )
+
+    def test_preserves_literal_brackets_in_say_as_spoken_form(self) -> None:
+        document = parse("Термин {{say:API|эй-пи-ай [устаревшее]}}.")
+
+        compiled = compile_document(document)
+
+        self.assertTrue(compiled.endswith("Термин эй-пи-ай [[устаревшее]]."))
 
 
 if __name__ == "__main__":
