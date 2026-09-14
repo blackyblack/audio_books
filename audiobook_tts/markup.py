@@ -1,52 +1,131 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
+from typing import TypeAlias
 
 
 class MarkupError(ValueError):
     """Raised when Audiobook Markdown is malformed or unsupported."""
 
 
-_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(.+?)\s*$")
-_SAY_RE = re.compile(r"\{\{say:([^{}|]+)\|([^{}]+)\}\}")
-_PAUSE_RE = re.compile(r"\{\{pause:(short|medium|long)\}\}")
-_EMPHASIS_RE = re.compile(r"\*\*(.+?)\*\*")
-
-_PAUSE_TAGS = {
-    "short": "[short pause]",
-    "medium": "[pause]",
-    "long": "[long pause]",
-}
+@dataclass(frozen=True)
+class Text:
+    value: str
 
 
-def compile_for_elevenlabs(source: str) -> str:
-    """Compile the small ABM v0 subset to Eleven v3-compatible text cues."""
+@dataclass(frozen=True)
+class Emphasis:
+    value: str
+
+
+@dataclass(frozen=True)
+class Pause:
+    length: str
+
+
+@dataclass(frozen=True)
+class SayAs:
+    display: str
+    spoken: str
+
+
+Inline: TypeAlias = Text | Emphasis | Pause | SayAs
+
+
+@dataclass(frozen=True)
+class Heading:
+    level: int
+    content: tuple[Inline, ...]
+
+
+@dataclass(frozen=True)
+class Paragraph:
+    content: tuple[Inline, ...]
+
+
+Block: TypeAlias = Heading | Paragraph
+
+
+@dataclass(frozen=True)
+class Document:
+    blocks: tuple[Block, ...]
+
+
+_HEADING_RE = re.compile(r"^\s{0,3}(#{1,6})\s+(.+?)\s*$")
+_INLINE_TOKEN_RE = re.compile(
+    r"\*\*(.+?)\*\*"
+    r"|\{\{pause:(short|medium|long)\}\}"
+    r"|\{\{say:([^{}|]+)\|([^{}]+)\}\}"
+)
+
+
+def parse(source: str) -> Document:
+    """Parse the provider-independent Audiobook Markdown v0 subset."""
 
     if not source or not source.strip():
         raise MarkupError("Input text must not be empty.")
 
-    normalized = source.replace("\r\n", "\n").replace("\r", "\n")
-    lines: list[str] = []
-    for line in normalized.split("\n"):
-        heading = _HEADING_RE.match(line)
-        lines.append(heading.group(1) if heading else line)
+    normalized = source.replace("\r\n", "\n").replace("\r", "\n").strip()
+    raw_blocks = re.split(r"\n[ \t]*\n+", normalized)
+    blocks: list[Block] = []
 
-    compiled = "\n".join(lines)
-    compiled = _SAY_RE.sub(lambda match: match.group(2).strip(), compiled)
-    compiled = _PAUSE_RE.sub(lambda match: _PAUSE_TAGS[match.group(1)], compiled)
+    for raw_block in raw_blocks:
+        heading = _HEADING_RE.fullmatch(raw_block)
+        if heading:
+            blocks.append(
+                Heading(
+                    level=len(heading.group(1)),
+                    content=_parse_inline(heading.group(2)),
+                )
+            )
+        else:
+            blocks.append(Paragraph(content=_parse_inline(raw_block)))
 
-    if compiled.count("**") % 2:
-        raise MarkupError("Unclosed emphasis marker '**'.")
-    # Eleven v3's documented emphasis mechanism is capitalization. Keeping
-    # this provider-specific choice here leaves ABM's semantics provider-neutral.
-    compiled = _EMPHASIS_RE.sub(
-        lambda match: match.group(1).strip().upper(), compiled
+    return Document(blocks=tuple(blocks))
+
+
+def _parse_inline(value: str) -> tuple[Inline, ...]:
+    nodes: list[Inline] = []
+    position = 0
+
+    for match in _INLINE_TOKEN_RE.finditer(value):
+        plain = value[position : match.start()]
+        if plain:
+            nodes.append(Text(plain))
+
+        if match.group(1) is not None:
+            emphasized = match.group(1).strip()
+            if not emphasized:
+                raise MarkupError("Emphasis must not be empty.")
+            nodes.append(Emphasis(emphasized))
+        elif match.group(2) is not None:
+            nodes.append(Pause(match.group(2)))
+        else:
+            display = match.group(3).strip()
+            spoken = match.group(4).strip()
+            if not display or not spoken:
+                raise MarkupError("Both forms in a say directive must not be empty.")
+            nodes.append(SayAs(display=display, spoken=spoken))
+
+        position = match.end()
+
+    remainder = value[position:]
+    if remainder:
+        nodes.append(Text(remainder))
+
+    _reject_unparsed_markup(value, nodes)
+    return tuple(nodes)
+
+
+def _reject_unparsed_markup(value: str, nodes: list[Inline]) -> None:
+    text_outside_tokens = "".join(
+        node.value for node in nodes if isinstance(node, Text)
     )
-
-    if "{{" in compiled or "}}" in compiled:
+    if "{{" in text_outside_tokens or "}}" in text_outside_tokens:
         raise MarkupError(
             "Unknown or malformed ABM directive. Supported directives are "
             "{{pause:short|medium|long}} and {{say:display|spoken}}."
         )
-
-    return compiled.strip()
+    if "**" in text_outside_tokens or value.count("**") % 2:
+        raise MarkupError("Unclosed or malformed emphasis marker '**'.")

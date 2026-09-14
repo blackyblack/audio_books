@@ -6,11 +6,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from audiobook_tts.config import (
-    DEFAULT_ELEVENLABS_VOICE_ID,
-    ConfigurationError,
-    load_settings,
-)
+from audiobook_tts.config import ConfigurationError
+from audiobook_tts.providers.eleven_labs.config import DEFAULT_VOICE_ID, load_settings
 
 
 class SettingsTests(unittest.TestCase):
@@ -25,8 +22,8 @@ class SettingsTests(unittest.TestCase):
             ):
                 settings = load_settings()
 
-        self.assertEqual(settings.elevenlabs_api_key, "test-key")
-        self.assertEqual(settings.elevenlabs_voice_id, "test-voice")
+        self.assertEqual(settings.api_key, "test-key")
+        self.assertEqual(settings.voice_id, "test-voice")
 
     def test_reports_missing_values(self) -> None:
         with tempfile.TemporaryDirectory() as directory, patch.dict(
@@ -46,7 +43,7 @@ class SettingsTests(unittest.TestCase):
             ):
                 settings = load_settings()
 
-        self.assertEqual(settings.elevenlabs_voice_id, DEFAULT_ELEVENLABS_VOICE_ID)
+        self.assertEqual(settings.voice_id, DEFAULT_VOICE_ID)
 
     def test_voice_override_takes_precedence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -59,7 +56,7 @@ class SettingsTests(unittest.TestCase):
             ):
                 settings = load_settings(voice_id_override="cli-voice")
 
-        self.assertEqual(settings.elevenlabs_voice_id, "cli-voice")
+        self.assertEqual(settings.voice_id, "cli-voice")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from audiobook_tts.providers import ElevenLabsProvider, ProviderError
+from audiobook_tts.markup import parse
+from audiobook_tts.providers import ProviderError
+from audiobook_tts.providers.eleven_labs import ElevenLabsProvider
 
 
 class ProviderTests(unittest.TestCase):
@@ -16,7 +18,7 @@ class ProviderTests(unittest.TestCase):
             with self.assertRaisesRegex(ProviderError, "Unsupported model"):
                 self.provider.synthesize(
                     model="unknown",
-                    text="Текст",
+                    document=parse("Текст"),
                     output=Path(directory, "out.mp3"),
                 )
 
@@ -25,7 +27,7 @@ class ProviderTests(unittest.TestCase):
             with self.assertRaisesRegex(ProviderError, "5,001 characters"):
                 self.provider.synthesize(
                     model="eleven_v3",
-                    text="а" * 5_001,
+                    document=parse("а" * 5_001),
                     output=Path(directory, "out.mp3"),
                 )
 
@@ -56,7 +58,9 @@ class ProviderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory, "sample.mp3")
             result = provider.synthesize(
-                model="eleven_v3", text="Пример.", output=output
+                model="eleven_v3",
+                document=parse("Пример: **важно**. {{pause:short}}"),
+                output=output,
             )
 
             self.assertEqual(output.read_bytes(), b"audio-data")
@@ -67,7 +71,7 @@ class ProviderTests(unittest.TestCase):
             {
                 "api_key": "secret",
                 "voice_id": "russian-voice",
-                "text": "Пример.",
+                "text": "Пример: ВАЖНО. [short pause]",
                 "model_id": "eleven_v3",
                 "output_format": "mp3_44100_128",
             },

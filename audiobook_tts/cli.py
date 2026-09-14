@@ -4,9 +4,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from audiobook_tts.config import ConfigurationError, load_environment, load_settings
-from audiobook_tts.markup import MarkupError, compile_for_elevenlabs
-from audiobook_tts.providers import ElevenLabsProvider, ProviderError
+from audiobook_tts.config import ConfigurationError, load_environment
+from audiobook_tts.markup import MarkupError, parse
+from audiobook_tts.providers import ProviderError
+from audiobook_tts.providers.eleven_labs import (
+    ElevenLabsProvider,
+    load_settings,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -55,13 +59,13 @@ def read_input(*, text: str | None, input_file: Path | None) -> str:
 
 def run(args: argparse.Namespace) -> Path:
     source = read_input(text=args.text, input_file=args.input_file)
-    compiled = compile_for_elevenlabs(source)
+    document = parse(source)
     settings = load_settings(voice_id_override=args.voice_id)
     provider = ElevenLabsProvider(
-        api_key=settings.elevenlabs_api_key,
-        voice_id=settings.elevenlabs_voice_id,
+        api_key=settings.api_key,
+        voice_id=settings.voice_id,
     )
-    return provider.synthesize(model=args.model, text=compiled, output=args.output)
+    return provider.synthesize(model=args.model, document=document, output=args.output)
 
 
 def main(argv: list[str] | None = None) -> int:
