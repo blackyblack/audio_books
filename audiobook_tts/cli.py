@@ -7,10 +7,7 @@ from pathlib import Path
 from audiobook_tts.config import ConfigurationError, load_environment
 from audiobook_tts.markup import MarkupError, parse
 from audiobook_tts.providers import ProviderError
-from audiobook_tts.providers.eleven_labs import (
-    ElevenLabsProvider,
-    load_settings,
-)
+from audiobook_tts.providers.factory import SUPPORTED_MODELS, create_provider
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -21,7 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--model",
         required=True,
-        choices=sorted(ElevenLabsProvider.SUPPORTED_MODELS),
+        choices=sorted(SUPPORTED_MODELS),
         help="TTS model to use.",
     )
     text_source = parser.add_mutually_exclusive_group(required=True)
@@ -33,15 +30,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--voice-id",
-        help=(
-            "Override ELEVENLABS_VOICE_ID from .env for this request "
-            "(default: ElevenLabs George voice)."
-        ),
+        help="Override the selected provider's configured voice for this request.",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("output.mp3"),
         help="Output MP3 path (default: output.mp3).",
     )
     return parser
@@ -60,12 +53,9 @@ def read_input(*, text: str | None, input_file: Path | None) -> str:
 def run(args: argparse.Namespace) -> Path:
     source = read_input(text=args.text, input_file=args.input_file)
     document = parse(source)
-    settings = load_settings(voice_id_override=args.voice_id)
-    provider = ElevenLabsProvider(
-        api_key=settings.api_key,
-        voice_id=settings.voice_id,
-    )
-    return provider.synthesize(model=args.model, document=document, output=args.output)
+    provider = create_provider(model=args.model, voice_id_override=args.voice_id)
+    output = args.output or Path(f"output{provider.OUTPUT_SUFFIX}")
+    return provider.synthesize(model=args.model, document=document, output=output)
 
 
 def main(argv: list[str] | None = None) -> int:

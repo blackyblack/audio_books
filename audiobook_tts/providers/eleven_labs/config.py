@@ -23,7 +23,7 @@ def load_settings(*, voice_id_override: str | None = None) -> ElevenLabsSettings
     if not api_key:
         raise ConfigurationError(
             "Missing configuration: ELEVENLABS_API_KEY. Add it to .env; "
-            "see Readme.md for setup instructions."
+            "see audiobook_tts/providers/eleven_labs/README.md."
         )
 
     voice_id = (

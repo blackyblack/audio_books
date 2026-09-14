@@ -11,6 +11,7 @@ from audiobook_tts.providers.eleven_labs.markup import compile_document
 
 class ElevenLabsProvider:
     SUPPORTED_MODELS = frozenset({"eleven_v3"})
+    OUTPUT_SUFFIX = ".mp3"
     MAX_CHARACTERS = 5_000
     OUTPUT_FORMAT = "mp3_44100_128"
 
