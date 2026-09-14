@@ -19,6 +19,23 @@
       ]
     },
     {
+      "name": "TTS: Chirp 3 HD short corpus sample",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "audiobook_tts",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--model",
+        "chirp3-hd",
+        "--input-file",
+        "${workspaceFolder}/corpus/short/07_stress_homographs.abm",
+        "--output",
+        "${workspaceFolder}/outputs/debug/chirp3-hd/stress_homographs.mp3"
+      ]
+    },
+    {
       "name": "TTS: Gemini 3.1 Flash short corpus sample",
       "type": "debugpy",
       "request": "launch",
@@ -67,6 +84,23 @@
         "${workspaceFolder}/corpus/short/07_stress_homographs.abm",
         "--output",
         "${workspaceFolder}/outputs/debug/yandex-speechkit-v3/stress_homographs.mp3"
+      ]
+    },
+    {
+      "name": "TTS: Qwen3 TTS Voice Design short corpus sample",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "audiobook_tts",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--model",
+        "qwen3-tts-vd-2026-01-26",
+        "--input-file",
+        "${workspaceFolder}/corpus/short/07_stress_homographs.abm",
+        "--output",
+        "${workspaceFolder}/outputs/debug/qwen3-tts-vd-2026-01-26/stress_homographs.wav"
       ]
     }
   ]

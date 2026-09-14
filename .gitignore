@@ -1,4 +1,5 @@
 .env
+chirp3.json
 .venv/
 __pycache__/
 *.py[cod]
@@ -8,5 +9,6 @@ build/
 output.mp3
 outputs/
 *.part
+.qwen3-tts-vd-voice
 samples/
 output/

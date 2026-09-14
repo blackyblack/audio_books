@@ -20,7 +20,9 @@ python -m pip install -e .
 Configure the selected provider using `.env`:
 
 - [ElevenLabs](audiobook_tts/providers/eleven_labs/README.md)
+- [Google Cloud Chirp 3 HD](audiobook_tts/providers/chirp3/README.md)
 - [Google](audiobook_tts/providers/google/README.md)
+- [Qwen3 TTS Voice Design](audiobook_tts/providers/qwen3/README.md)
 - [Yandex](audiobook_tts/providers/yandex/README.md)
 
 Each provider guide lists its supported models, credentials, voices, output
