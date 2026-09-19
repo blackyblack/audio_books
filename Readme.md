@@ -28,6 +28,22 @@ Configure the selected provider using `.env`:
 Each provider guide lists its supported models, credentials, voices, output
 format, and provider-specific behavior.
 
+## Supported model IDs
+
+Pass one of these exact values to `--model`:
+
+- ElevenLabs: `eleven_v3`
+- Google Cloud Text-to-Speech: `chirp3-hd`
+- Google Gemini TTS: `gemini-2.5-flash-preview-tts`
+- Google Gemini TTS: `gemini-2.5-pro-preview-tts`
+- Google Gemini TTS: `gemini-3.1-flash-tts-preview`
+- Qwen3 TTS Voice Design: `qwen3-tts-vd-2026-01-26`
+- Yandex SpeechKit: `yandex-speechkit-v3`
+
+The same list is shown by `audiobook-tts --help` and
+`audiobook-tts-corpus --help`. Values such as provider display names or voice
+IDs are not valid `--model` arguments.
+
 ## Usage
 
 Generate from text supplied on the command line:
@@ -44,6 +60,8 @@ audiobook-tts --model MODEL_ID --input-file excerpt.md
 
 The default filename is `output` with the selected provider's file extension.
 Use `--output` to choose another path with that same extension.
+Use `--voice-id VOICE_ID` to override the single configured voice; provider
+guides list accepted voice values.
 
 The module form works without the installed command wrapper:
 
@@ -51,46 +69,11 @@ The module form works without the installed command wrapper:
 python -m audiobook_tts --model MODEL_ID --text "Пример текста."
 ```
 
-## Audiobook Markdown v0
+## Audiobook Markdown
 
-The supported subset is intentionally small:
-
-```markdown
-# Глава первая
-
-Вдали показался **за́мок**. {{pause:medium}}
-
-Это принадлежит {{say:МГУ|эм-гэ-у}}.
-```
-
-- `# Заголовок` — spoken heading and paragraph boundary.
-- A blank line — paragraph boundary.
-- `**текст**` — emphasized text.
-- `за́мок` — explicit Russian stress using a Unicode acute accent.
-- `{{pause:short}}` — a `short`, `medium`, or `long` pause.
-- `{{say:МГУ|эм-гэ-у}}` — display/source form followed by the spoken form.
-
-Narrative performance cues use `{{cue:name}}`. For example:
-
-```markdown
-{{cue:whispers}}Подойди ближе. {{cue:sighs}} Я надеялся, что ты поймёшь.
-{{cue:serious}}Теперь слушай. {{cue:very-slow}}Спешить некуда.
-```
-
-The curated cue names are:
-
-- Delivery: `bored`, `curious`, `excited`, `excitedly`, `mischievously`,
-  `reluctantly`, `sarcastic`, `serious`, `tired`, `very-fast`, `very-slow`.
-- Intense delivery: `amazed`, `crying`, `panicked`, `shouting`, `trembling`,
-  `whispers`.
-- Non-verbal performance: `gasp`, `giggles`, `laughs`, `sighs`.
-
-Cues express provider-neutral performance intent. Each renderer translates a
-cue when the selected service has an equivalent and safely omits it otherwise.
-Exact delivery remains model-dependent, so use cues sparingly and audition
-important passages. Ordinary square brackets are text, not ABM markup.
-
-Unknown or malformed directives are rejected before generation.
+ABM defines headings, emphasis, stress, pauses, spoken substitutions,
+performance cues, and narrator-style direction. See [ABM.md](ABM.md) for the
+complete syntax.
 
 ## Evaluation corpus
 

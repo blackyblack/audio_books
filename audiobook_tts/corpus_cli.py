@@ -9,7 +9,11 @@ from audiobook_tts.config import ConfigurationError, load_environment
 from audiobook_tts.corpus import CorpusDocument, CorpusError, load_corpus
 from audiobook_tts.markup import Document
 from audiobook_tts.providers import ProviderError
-from audiobook_tts.providers.factory import SUPPORTED_MODELS, create_provider
+from audiobook_tts.providers.factory import (
+    SUPPORTED_MODELS,
+    create_provider,
+    supported_models_help,
+)
 
 
 class CorpusProvider(Protocol):
@@ -27,7 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--model",
         required=True,
         choices=sorted(SUPPORTED_MODELS),
-        help="TTS model to use for every sample.",
+        help=supported_models_help(),
     )
     parser.add_argument(
         "--corpus-root",
@@ -89,7 +93,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         # Validate and parse the complete corpus before the first billable call.
         samples = load_corpus(args.corpus_root)
-        provider = create_provider(model=args.model, voice_id_override=args.voice_id)
+        provider = create_provider(
+            model=args.model,
+            voice_id_override=args.voice_id,
+        )
         output_dir = args.output_dir or Path("outputs") / args.model
         generated, skipped = run_corpus(
             provider=provider,
@@ -99,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
             overwrite=args.overwrite,
             output_suffix=provider.output_suffix_for(args.model),
         )
-    except (ConfigurationError, CorpusError, ProviderError) as exc:
+    except (ConfigurationError, CorpusError, ProviderError, ValueError) as exc:
         parser.exit(2, f"error: {exc}\n")
 
     print(f"Corpus run complete: {generated} generated, {skipped} skipped.")

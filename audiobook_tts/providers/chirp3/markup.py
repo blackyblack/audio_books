@@ -23,7 +23,10 @@ def compile_document(document: Document) -> str:
     blocks = []
     for block in document.blocks:
         if isinstance(block, (Heading, Paragraph)):
-            content = "".join(_compile_inline(node) for node in block.content)
+            content_parts: list[str] = []
+            for node in block.content:
+                content_parts.append(_compile_inline(node))
+            content = "".join(content_parts)
             blocks.append(f"<p>{content}</p>")
     return f"<speak>{''.join(blocks)}</speak>"
 

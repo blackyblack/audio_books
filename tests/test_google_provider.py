@@ -35,6 +35,26 @@ class GoogleProviderTests(unittest.TestCase):
             ".wav",
         )
 
+    def test_exposes_documented_gemini_voice_ids(self) -> None:
+        self.assertEqual(GoogleProvider.VOICE_CHARACTERISTICS["Kore"], "Firm")
+        self.assertEqual(GoogleProvider.VOICE_CHARACTERISTICS["Leda"], "Youthful")
+        self.assertEqual(GoogleProvider.VOICE_CHARACTERISTICS["Sulafat"], "Warm")
+
+    def test_rejects_unsupported_gemini_voice_before_api_call(self) -> None:
+        provider = GoogleProvider(
+            api_key="secret",
+            voice="not-a-gemini-voice",
+            client_factory=lambda **_: None,
+        )
+        with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(
+            ProviderError, "Supported voices"
+        ):
+            provider.synthesize(
+                model="gemini-3.1-flash-tts-preview",
+                document=parse("Пример."),
+                output=Path(directory, "sample.wav"),
+            )
+
     def test_uses_default_pcm_and_writes_wav_for_flash(self) -> None:
         calls: dict[str, object] = {}
         pcm = b"\x01\x00\x02\x00"
@@ -198,7 +218,6 @@ class GoogleProviderTests(unittest.TestCase):
                 document=parse("Пример."),
                 output=Path(directory, "sample.wav"),
             )
-
 
 if __name__ == "__main__":
     unittest.main()

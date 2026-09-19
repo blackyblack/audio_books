@@ -117,6 +117,20 @@ class MarkupTests(unittest.TestCase):
         with self.assertRaisesRegex(MarkupError, "must not be empty"):
             parse("  \n")
 
+    def test_parses_narrator_style(self) -> None:
+        document = parse(
+            "{{narrator-style:Measured, atmospheric classical narration.}}\n"
+            "\nАнна вошла."
+        )
+
+        self.assertEqual(
+            document.narrator_style,
+            "Measured, atmospheric classical narration.",
+        )
+
+    def test_rejects_metadata_after_spoken_content(self) -> None:
+        with self.assertRaisesRegex(MarkupError, "must appear in the ABM preamble"):
+            parse("Текст.\n{{narrator-style:Measured.}}")
 
 if __name__ == "__main__":
     unittest.main()

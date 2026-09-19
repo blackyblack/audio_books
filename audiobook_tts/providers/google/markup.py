@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from audiobook_tts.markup import (
     Cue,
+    DEFAULT_NARRATOR_STYLE,
     Document,
     Emphasis,
     Heading,
@@ -31,19 +32,25 @@ _DIRECTION = (
     "Treat text between double asterisks as emphasized without speaking the "
     "asterisks. Treat single square-bracketed controls as performance "
     "directions: follow them without speaking them. Doubled square brackets "
-    "are literal transcript punctuation; speak their contents normally.\n\n"
-    "TRANSCRIPT:\n"
+    "are literal transcript punctuation; speak their contents normally."
 )
 
 
 def compile_document(document: Document) -> str:
     """Render provider-neutral ABM as a Gemini TTS prompt."""
 
+    directions = [_DIRECTION]
+    narrator_style = document.narrator_style or DEFAULT_NARRATOR_STYLE
+    directions.append(f"NARRATOR STYLE:\n{narrator_style}")
+
     rendered_blocks: list[str] = []
     for block in document.blocks:
         if isinstance(block, (Heading, Paragraph)):
-            rendered_blocks.append("".join(_compile_inline(node) for node in block.content))
-    return _DIRECTION + "\n\n".join(rendered_blocks).strip()
+            rendered_blocks.append(
+                "".join(_compile_inline(node) for node in block.content)
+            )
+    transcript = "\n\n".join(rendered_blocks).strip()
+    return "\n\n".join(directions) + "\n\nTRANSCRIPT:\n" + transcript
 
 
 def _compile_inline(node: Inline) -> str:

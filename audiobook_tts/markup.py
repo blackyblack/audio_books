@@ -9,6 +9,12 @@ class MarkupError(ValueError):
     """Raised when Audiobook Markdown is malformed or unsupported."""
 
 
+DEFAULT_NARRATOR_STYLE = (
+    "Clear and neutral audiobook narration with natural pacing and restrained "
+    "expression."
+)
+
+
 @dataclass(frozen=True)
 class Text:
     value: str
@@ -55,9 +61,11 @@ Block: TypeAlias = Heading | Paragraph
 @dataclass(frozen=True)
 class Document:
     blocks: tuple[Block, ...]
+    narrator_style: str | None = None
 
 
 _HEADING_RE = re.compile(r"^\s{0,3}(#{1,6})\s+(.+?)\s*$")
+_NARRATOR_STYLE_RE = re.compile(r"^\s*\{\{narrator-style:([^{}]+)\}\}\s*$")
 # A conservative, audiobook-oriented subset of Gemini's documented audio tags.
 # Kebab-case is used where Gemini's tag contains spaces so ABM directives remain
 # easy to parse and portable to other providers.
@@ -96,7 +104,7 @@ _INLINE_TOKEN_RE = re.compile(
 
 
 def parse(source: str) -> Document:
-    """Parse the provider-independent Audiobook Markdown v0 subset."""
+    """Parse provider-independent Audiobook Markdown."""
 
     if not source or not source.strip():
         raise MarkupError("Input text must not be empty.")
@@ -104,6 +112,8 @@ def parse(source: str) -> Document:
     normalized = source.replace("\r\n", "\n").replace("\r", "\n").strip()
     blocks: list[Block] = []
     paragraph_lines: list[str] = []
+    narrator_style: str | None = None
+    seen_spoken_content = False
 
     def flush_paragraph() -> None:
         if paragraph_lines:
@@ -115,9 +125,25 @@ def parse(source: str) -> Document:
             flush_paragraph()
             continue
 
+        style = _NARRATOR_STYLE_RE.fullmatch(line)
+        if style:
+            if seen_spoken_content or paragraph_lines or blocks:
+                raise MarkupError(
+                    "Narrator style must appear in the ABM preamble."
+                )
+            if narrator_style is not None:
+                raise MarkupError(
+                    "ABM may contain only one narrator-style directive."
+                )
+            narrator_style = style.group(1).strip()
+            if not narrator_style:
+                raise MarkupError("Narrator style must not be empty.")
+            continue
+
         heading = _HEADING_RE.fullmatch(line)
         if heading:
             flush_paragraph()
+            seen_spoken_content = True
             blocks.append(
                 Heading(
                     level=len(heading.group(1)),
@@ -125,11 +151,15 @@ def parse(source: str) -> Document:
                 )
             )
         else:
+            seen_spoken_content = True
             paragraph_lines.append(line)
 
     flush_paragraph()
 
-    return Document(blocks=tuple(blocks))
+    if not blocks:
+        raise MarkupError("Input text must contain spoken content.")
+
+    return Document(blocks=tuple(blocks), narrator_style=narrator_style)
 
 
 def _parse_inline(value: str) -> tuple[Inline, ...]:
@@ -145,7 +175,9 @@ def _parse_inline(value: str) -> tuple[Inline, ...]:
             emphasized = match.group("emphasis").strip()
             if not emphasized:
                 raise MarkupError("Emphasis must not be empty.")
-            nodes.append(Emphasis(content=_parse_inline(emphasized)))
+            nodes.append(
+                Emphasis(content=_parse_inline(emphasized))
+            )
         elif match.group("pause") is not None:
             nodes.append(Pause(match.group("pause")))
         elif match.group("say_display") is not None:
@@ -162,7 +194,6 @@ def _parse_inline(value: str) -> tuple[Inline, ...]:
                     f"Unsupported ABM cue '{cue}'. Supported cues: {supported}."
                 )
             nodes.append(Cue(name=cue))
-
         position = match.end()
 
     remainder = value[position:]
@@ -181,7 +212,7 @@ def _reject_unparsed_markup(value: str, nodes: list[Inline]) -> None:
         raise MarkupError(
             "Unknown or malformed ABM directive. Supported directives are "
             "{{pause:short|medium|long}}, {{say:display|spoken}}, and "
-            "{{cue:name}}."
+            "{{cue:name}}, and {{narrator-style:description}}."
         )
     if "**" in text_outside_tokens or value.count("**") % 2:
         raise MarkupError("Unclosed or malformed emphasis marker '**'.")

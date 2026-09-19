@@ -7,7 +7,11 @@ from pathlib import Path
 from audiobook_tts.config import ConfigurationError, load_environment
 from audiobook_tts.markup import MarkupError, parse
 from audiobook_tts.providers import ProviderError
-from audiobook_tts.providers.factory import SUPPORTED_MODELS, create_provider
+from audiobook_tts.providers.factory import (
+    SUPPORTED_MODELS,
+    create_provider,
+    supported_models_help,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -19,7 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--model",
         required=True,
         choices=sorted(SUPPORTED_MODELS),
-        help="TTS model to use.",
+        help=supported_models_help(),
     )
     text_source = parser.add_mutually_exclusive_group(required=True)
     text_source.add_argument("--text", help="Input text or Audiobook Markdown.")
@@ -53,7 +57,10 @@ def read_input(*, text: str | None, input_file: Path | None) -> str:
 def run(args: argparse.Namespace) -> Path:
     source = read_input(text=args.text, input_file=args.input_file)
     document = parse(source)
-    provider = create_provider(model=args.model, voice_id_override=args.voice_id)
+    provider = create_provider(
+        model=args.model,
+        voice_id_override=args.voice_id,
+    )
     output = args.output or Path(f"output{provider.output_suffix_for(args.model)}")
     return provider.synthesize(model=args.model, document=document, output=output)
 

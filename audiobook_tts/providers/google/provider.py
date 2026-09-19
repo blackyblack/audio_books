@@ -20,6 +20,39 @@ class GoogleProvider:
         FLASH_31_MODEL: (".wav", "audio/l16"),
     }
     SUPPORTED_MODELS = frozenset(MODEL_OUTPUTS)
+    VOICE_CHARACTERISTICS = {
+        "Zephyr": "Bright",
+        "Puck": "Upbeat",
+        "Charon": "Informative",
+        "Kore": "Firm",
+        "Fenrir": "Excitable",
+        "Leda": "Youthful",
+        "Orus": "Firm",
+        "Aoede": "Breezy",
+        "Callirrhoe": "Easy-going",
+        "Autonoe": "Bright",
+        "Enceladus": "Breathy",
+        "Iapetus": "Clear",
+        "Umbriel": "Easy-going",
+        "Algieba": "Smooth",
+        "Despina": "Smooth",
+        "Erinome": "Clear",
+        "Algenib": "Gravelly",
+        "Rasalgethi": "Informative",
+        "Laomedeia": "Upbeat",
+        "Achernar": "Soft",
+        "Alnilam": "Firm",
+        "Schedar": "Even",
+        "Gacrux": "Mature",
+        "Pulcherrima": "Forward",
+        "Achird": "Friendly",
+        "Zubenelgenubi": "Casual",
+        "Vindemiatrix": "Gentle",
+        "Sadachbia": "Lively",
+        "Sadaltager": "Knowledgeable",
+        "Sulafat": "Warm",
+    }
+    SUPPORTED_VOICES = frozenset(VOICE_CHARACTERISTICS)
     OUTPUT_SAMPLE_RATE = 24_000
     OUTPUT_CHANNELS = 1
     OUTPUT_SAMPLE_WIDTH = 2
@@ -54,6 +87,7 @@ class GoogleProvider:
             client_factory = genai.Client
 
         prompt = compile_document(document)
+        self._validate_voice(self._voice)
         output = output.expanduser()
         output.parent.mkdir(parents=True, exist_ok=True)
         partial = output.with_name(f"{output.name}.part")
@@ -92,6 +126,15 @@ class GoogleProvider:
             raise ProviderError(f"Google generation failed: {exc}") from exc
 
         return output.resolve()
+
+    @classmethod
+    def _validate_voice(cls, voice: str) -> None:
+        if voice not in cls.SUPPORTED_VOICES:
+            supported = ", ".join(cls.VOICE_CHARACTERISTICS)
+            raise ProviderError(
+                f"Unsupported Gemini voice '{voice}'. Supported voices: "
+                f"{supported}."
+            )
 
     @classmethod
     def output_suffix_for(cls, model: str) -> str:

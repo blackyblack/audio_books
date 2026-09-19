@@ -38,4 +38,5 @@ Yandex audio is written as MP3. Corpus output is placed beneath
 
 SpeechKit markup has no portable inline equivalent for Audiobook Markdown
 performance cues. The renderer omits cue directions rather than speaking them;
-the surrounding transcript is preserved.
+the surrounding transcript is preserved. Narrator style is ignored with a
+console warning.

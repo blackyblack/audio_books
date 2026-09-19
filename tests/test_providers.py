@@ -103,6 +103,5 @@ class ProviderTests(unittest.TestCase):
 
         self.assertEqual(calls["text"], "ТЕКСТ [short pause]")
 
-
 if __name__ == "__main__":
     unittest.main()

@@ -62,4 +62,5 @@ Audio is written as WAV. Inputs longer than Qwen's 600-character request limit
 are split at natural text boundaries and the returned PCM WAV segments are
 joined. ABM pauses become punctuation-based pauses and spoken substitutions are
 preserved. Voice Design has no instruction-control or position-scoped cue API,
-so performance cues are omitted.
+so performance cues are omitted. Narrator style is ignored with a console
+warning.

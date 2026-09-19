@@ -54,4 +54,5 @@ audiobook-tts-corpus --model chirp3-hd
 
 Audio is written as MP3. Paragraphs, pauses, spoken substitutions, and emphasis
 are rendered with Chirp 3 HD SSML. Emotional performance cues are omitted
-because Chirp has no equivalent inline emotional-direction syntax.
+because Chirp has no equivalent inline emotional-direction syntax. Narrator
+style is ignored with a console warning.

@@ -43,4 +43,5 @@ unless `--overwrite` is provided.
 
 Audiobook Markdown performance cues are passed to Eleven v3 as equivalent
 bracketed directions on a best-effort basis. Their exact effect is
-model-dependent and should be auditioned.
+model-dependent and should be auditioned. Narrator style is ignored with a
+console warning.

@@ -30,6 +30,5 @@ class ElevenLabsMarkupTests(unittest.TestCase):
             compile_document(document), "[whispers]Quiet. [very slow]Wait."
         )
 
-
 if __name__ == "__main__":
     unittest.main()

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from audiobook_tts.markup import Document
-from audiobook_tts.providers.base import ProviderError
+from audiobook_tts.providers.base import ProviderError, warn_ignored_narrator_style
 from audiobook_tts.providers.qwen3.markup import compile_document
 
 
@@ -48,6 +48,7 @@ class Qwen3Provider:
         self._validate_model(model)
         if output.suffix.lower() != self.OUTPUT_SUFFIX:
             raise ProviderError(f"{model} output must use the .wav extension.")
+        warn_ignored_narrator_style(document, "Qwen3 TTS Voice Design")
 
         session_factory = self._session_factory
         if session_factory is None:

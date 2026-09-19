@@ -22,6 +22,5 @@ class Chirp3MarkupTests(unittest.TestCase):
             "</speak>",
         )
 
-
 if __name__ == "__main__":
     unittest.main()

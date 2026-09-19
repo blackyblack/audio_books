@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from audiobook_tts.markup import SUPPORTED_CUES, parse
+from audiobook_tts.markup import DEFAULT_NARRATOR_STYLE, SUPPORTED_CUES, parse
 from audiobook_tts.providers.google.markup import compile_document
 
 
@@ -16,6 +16,7 @@ class GoogleMarkupTests(unittest.TestCase):
 
         compiled = compile_document(document)
 
+        self.assertIn(f"NARRATOR STYLE:\n{DEFAULT_NARRATOR_STYLE}", compiled)
         self.assertIn("TRANSCRIPT:\nГлава первая\n\n", compiled)
         self.assertTrue(
             compiled.endswith(
@@ -67,6 +68,17 @@ class GoogleMarkupTests(unittest.TestCase):
         compiled = compile_document(document)
 
         self.assertTrue(compiled.endswith("Термин эй-пи-ай [[устаревшее]]."))
+
+    def test_compiles_narrator_style(self) -> None:
+        document = parse(
+            "{{narrator-style:Measured and atmospheric.}}\n\nОна вошла."
+        )
+
+        compiled = compile_document(document)
+
+        self.assertIn("NARRATOR STYLE:\nMeasured and atmospheric.", compiled)
+        self.assertNotIn(DEFAULT_NARRATOR_STYLE, compiled)
+        self.assertTrue(compiled.endswith("TRANSCRIPT:\nОна вошла."))
 
 
 if __name__ == "__main__":

@@ -17,37 +17,67 @@ GOOGLE_VOICE=
 ```
 
 `GOOGLE_API_KEY` is required. When `GOOGLE_VOICE` is empty, the provider uses
-`Kore`. Available voices are listed in the
-[Gemini TTS guide](https://ai.google.dev/gemini-api/docs/speech-generation#voices).
+`Kore`.
+
+## Voices
+
+`--voice-id` and `GOOGLE_VOICE` accept a case-sensitive Gemini prebuilt voice
+name. They do not accept an arbitrary or custom name.
+
+Supported voice names:
+
+- `Zephyr` — Bright
+- `Puck` — Upbeat
+- `Charon` — Informative
+- `Kore` — Firm
+- `Fenrir` — Excitable
+- `Leda` — Youthful
+- `Orus` — Firm
+- `Aoede` — Breezy
+- `Callirrhoe` — Easy-going
+- `Autonoe` — Bright
+- `Enceladus` — Breathy
+- `Iapetus` — Clear
+- `Umbriel` — Easy-going
+- `Algieba` — Smooth
+- `Despina` — Smooth
+- `Erinome` — Clear
+- `Algenib` — Gravelly
+- `Rasalgethi` — Informative
+- `Laomedeia` — Upbeat
+- `Achernar` — Soft
+- `Alnilam` — Firm
+- `Schedar` — Even
+- `Gacrux` — Mature
+- `Pulcherrima` — Forward
+- `Achird` — Friendly
+- `Zubenelgenubi` — Casual
+- `Vindemiatrix` — Gentle
+- `Sadachbia` — Lively
+- `Sadaltager` — Knowledgeable
+- `Sulafat` — Warm
+
+Select the voice with:
+
+```powershell
+audiobook-tts --model gemini-3.1-flash-tts-preview --voice-id Kore --input-file excerpt.md
+```
+
+Gemini supports Russian. See Google's
+[Gemini TTS guide](https://ai.google.dev/gemini-api/docs/speech-generation#voices)
+for voice previews and current platform details.
 
 ## Commands
 
-Generate one sample:
-
 ```powershell
 audiobook-tts --model gemini-3.1-flash-tts-preview --input-file excerpt.md
-```
-
-Generate the entire corpus:
-
-```powershell
 audiobook-tts-corpus --model gemini-3.1-flash-tts-preview
 ```
 
-Gemini audio is written as WAV. Corpus output is placed beneath
-`outputs/<model>`.
+## Provider behavior
 
-Audiobook Markdown `{{cue:name}}` directives compile to Gemini's documented
-inline audio tags. The schema deliberately supports a curated narrative subset
-instead of arbitrary tags so typos fail before a billable request. See the
-project README for the complete cue list.
-
-Google recommends English audio tags even when the transcript is in another
-language; ABM therefore keeps cue names in English. Tags influence the following
-line or section rather than marking a rigorously bounded span. Keep directions
-coherent with the selected voice and split long 3.1 generations into chunks of
-a few minutes to reduce voice and quality drift.
-
-Ordinary square brackets remain literal ABM text. The renderer visibly doubles
-them in the generated prompt (`[text]` becomes `[[text]]`) so Gemini can
-distinguish transcript punctuation from single-bracket audio-tag directions.
+Audio is written as WAV. Performance cues compile to Gemini audio tags;
+narrator style is sent as a natural-language direction. Literal square brackets
+are escaped before generation. When ABM does not specify a narrator style, the
+default is clear, neutral narration with natural pacing and restrained
+expression.

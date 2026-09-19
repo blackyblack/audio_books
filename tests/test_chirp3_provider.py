@@ -44,6 +44,5 @@ class Chirp3ProviderTests(unittest.TestCase):
                 model="chirp3-hd", document=parse("Пример."), output=Path("x.wav")
             )
 
-
 if __name__ == "__main__":
     unittest.main()

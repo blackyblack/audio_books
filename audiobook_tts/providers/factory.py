@@ -18,7 +18,9 @@ SUPPORTED_MODELS = frozenset(
 
 
 def create_provider(
-    *, model: str, voice_id_override: str | None = None
+    *,
+    model: str,
+    voice_id_override: str | None = None,
 ) -> SpeechProvider:
     if model in ElevenLabsProvider.SUPPORTED_MODELS:
         from audiobook_tts.providers.eleven_labs import load_settings
@@ -36,7 +38,10 @@ def create_provider(
         from audiobook_tts.providers.google import load_settings
 
         settings = load_settings(voice_override=voice_id_override)
-        return GoogleProvider(api_key=settings.api_key, voice=settings.voice)
+        return GoogleProvider(
+            api_key=settings.api_key,
+            voice=settings.voice,
+        )
 
     if model in Qwen3Provider.SUPPORTED_MODELS:
         from audiobook_tts.providers.qwen3 import load_settings
@@ -58,3 +63,6 @@ def create_provider(
 
     supported = ", ".join(sorted(SUPPORTED_MODELS))
     raise ProviderError(f"Unsupported model '{model}'. Supported: {supported}.")
+
+def supported_models_help() -> str:
+    return "Supported model IDs: " + ", ".join(sorted(SUPPORTED_MODELS)) + "."

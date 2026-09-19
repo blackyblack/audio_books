@@ -32,7 +32,6 @@ def compile_document(document: Document) -> str:
     for block in document.blocks:
         if isinstance(block, (Heading, Paragraph)):
             rendered_blocks.append("".join(_compile_inline(node) for node in block.content))
-
     return "\n\n".join(rendered_blocks).strip()
 
 
